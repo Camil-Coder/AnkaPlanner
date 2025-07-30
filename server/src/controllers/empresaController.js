@@ -1,9 +1,30 @@
-// 1. Importamos las funciones del modelo de empresa
-// Estas funciones son las que realmente interactúan con la base de datos
-import { obtenerEmpresas, crearEmpresa, actualizarEmpresa, eliminarEmpresa, } from '../models/empresaModel.js';
+// src\controllers\empresaController.js
 
+// Importamos las funciones del modelo de empresa
+import { obtenerNombreEmpresaPorId, obtenerEmpresas, crearEmpresa, actualizarEmpresa, eliminarEmpresa, } from '../models/empresaModel.js';
 
-// 2. Controlador para obtener todas las empresas (GET /api/empresas)
+// Controlador para obtener el nombre de una empresa (GET /api/empresas/:id)
+export const getOneEmpresa = async (req, res) => {
+    const id = req.params.id
+    try {
+        // Llama a la función que hace el SELECT * FROM EMPRESA WHERE ID = ?
+        const empresa = await obtenerNombreEmpresaPorId(id)
+
+        // Encaso de que el ID no exista
+        if (!empresa) {
+            return res.status(404).json({ error: "El ID ingresado no existe" })
+        }
+        
+        // Respuesta en formato JSON
+        res.json(empresa)
+        
+
+    } catch (error) {
+        res.status(500).json({ error: "Error al obtner el nombre de la empresa" })
+    }
+};
+
+// Controlador para obtener todas las empresas (GET /api/empresas)
 export const getEmpresas = async (req, res) => {
     try {
         // Llama a la función que hace el SELECT * FROM EMPRESA
@@ -18,7 +39,7 @@ export const getEmpresas = async (req, res) => {
 };
 
 
-// 3. Controlador para crear una nueva empresa (POST /api/empresas)
+// Controlador para crear una nueva empresa (POST /api/empresas)
 export const postEmpresa = async (req, res) => {
     try {
         // Obtenemos el nombre enviado por el cliente en el cuerpo del request
@@ -36,7 +57,7 @@ export const postEmpresa = async (req, res) => {
 };
 
 
-// 4. Controlador para actualizar una empresa existente (PUT /api/empresas/:id)
+// Controlador para actualizar una empresa existente (PUT /api/empresas/:id)
 export const putEmpresa = async (req, res) => {
     try {
         // Tomamos el ID de la URL, por ejemplo /api/empresas/3 → id = 3
@@ -61,7 +82,7 @@ export const putEmpresa = async (req, res) => {
 };
 
 
-// 5. Controlador para eliminar una empresa (DELETE /api/empresas/:id)
+// Controlador para eliminar una empresa (DELETE /api/empresas/:id)
 export const deleteEmpresa = async (req, res) => {
     try {
         // Tomamos el ID desde los parámetros de la URL

@@ -1,6 +1,16 @@
 // Importamos la conexión a la base de datos desde el archivo db.js
 import { db } from '../config/db.js';
 
+// Esta función consulta el nombre de una empresa por su ID
+export const obtenerNombreEmpresaPorId = async (idEmpresa) => {
+  const [rows] = await db.query('SELECT NOMBRE_EMPRESA FROM EMPRESA WHERE ID_EMPRESA = ?',[idEmpresa]);
+
+  // Si no se encuentra, devolvemos null
+  if (rows.length === 0) return null;
+
+  return rows[0].NOMBRE_EMPRESA;
+};
+
 // Esta función consulta TODAS las empresas registradas en la tabla EMPRESA
 export const obtenerEmpresas = async () => {
   // db.query() devuelve un array: [rows, fields] → solo usamos rows

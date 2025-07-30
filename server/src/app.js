@@ -1,6 +1,9 @@
 // Importamos Express para crear el servidor
 import express from 'express';
 
+// Importamos fileUpload para recir archivos desde el front
+import fileUpload from 'express-fileupload';
+
 // Importamos CORS para permitir peticiones desde otros orígenes (como desde un frontend)
 import cors from 'cors';
 
@@ -18,6 +21,9 @@ dotenv.config();
 
 // Creamos una instancia de Express
 const app = express();
+
+// Habilitamos el uso de archivos
+app.use(fileUpload())
 
 // Activamos CORS como middleware para que se puedan hacer peticiones desde otros dominios
 app.use(cors());

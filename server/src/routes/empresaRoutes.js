@@ -1,20 +1,25 @@
+// src\routes\empresaRoutes.js
+
 // Importamos Router de express para crear rutas individuales
 import { Router } from 'express';
 
 // Importamos las funciones del controlador que creamos
-import {getEmpresas,postEmpresa,putEmpresa,deleteEmpresa} from '../controllers/empresaController.js';
+import { getOneEmpresa, getEmpresas, postEmpresa, putEmpresa, deleteEmpresa} from '../controllers/empresaController.js';
 
 // Creamos una instancia de router (mini servidor)
 const router = Router();
 
-/* 
+/* --------------------------------------------------------------
   Definimos las rutas para el recurso EMPRESA:
 
   GET     /api/empresas        → obtener todas las empresas
   POST    /api/empresas        → crear nueva empresa
   PUT     /api/empresas/:id    → actualizar empresa por ID
   DELETE  /api/empresas/:id    → eliminar empresa por ID
-*/
+-----------------------------------------------------------------*/
+
+// Ruta para obtene solo una sola emrpesa
+router.get('/:id',getOneEmpresa)
 
 // Ruta para obtener todas las empresas
 router.get('/', getEmpresas);

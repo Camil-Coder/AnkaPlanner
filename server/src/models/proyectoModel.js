@@ -1,139 +1,173 @@
-// src/models/proyectoModel.js
+// src\models\proyectoModel.js
+
+// Importamos la conexión a la base de datos configurada previamente
 import { db } from '../config/db.js';
 
 
-// Obtener todos los proyectos, incluyendo nombre del topógrafo y de la empresa
+/* ---------------------------------------------
+  Busqueda de la ruta guardada de un proyecto
+  ---------------------------------------------*/
+export const buscarRutaProyecto = async (id_proyecto) =>{
+  const [rows] = await db.query('SELECT RUTA_PROYECTO FROM PROYECTO WHERE ID_PROYECTO = ?', [id_proyecto]);
+  // Si no lo encuentra retornamos null
+  if (rows.length === 0){
+    return null;
+  } 
+  return rows[0].RUTA_PROYECTO;
+};
+
+
+/* ---------------------------------------------
+  Busqueda de coicidencias aun nombre de proyecto
+  ---------------------------------------------*/
+export const buscarNombreProyecto = async (nombre_proyect) => {
+  const [rows] = await db.query('SELECT COUNT(*) AS coincidencias FROM  proyecto WHERE NOMBRE_PROYECTO = ?', [nombre_proyect])
+  // Si no se encuentra, devolvemos null
+  if (rows.length === 0) return null;
+  
+  return rows[0].coincidencias;
+}
+
+/* ---------------------------------------------
+  Obtener todos los proyectos registrados
+  ---------------------------------------------
+
+ * Recupera todos los proyectos desde la base de datos, incluyendo
+ * el nombre del topógrafo y el nombre de la empresa asociados a cada uno. */
+
 export const obtenerProyectos = async () => {
   const [rows] = await db.query(`
     SELECT 
-      p.ID_PROYECTO,
-      p.NOMBRE_PROYECTO,
-      p.FECHA_CREACION,
-      p.RUTA_PROYECTO,
-      p.RADIO_BUSQUEDA,
-      p.ESTADO_RED,
-      p.ESTADO_GEO,
-      t.NOMBRE_TOPOGRAFO,
-      e.NOMBRE_EMPRESA
+      p.ID_PROYECTO,           -- ID único del proyecto
+      p.NOMBRE_PROYECTO,       -- Nombre asignado al proyecto (ej. ALTAMIRA-0725)
+      p.FECHA_CREACION,        -- Fecha en que fue creado el proyecto
+      p.RUTA_PROYECTO,         -- Ruta absoluta en disco donde se aloja el proyecto
+      p.RADIO_BUSQUEDA,        -- Rango de búsqueda en km para estaciones GNSS
+      p.ESTADO_RED,            -- Estado del proceso de red (En Proceso / Completo)
+      p.ESTADO_GEO,            -- Estado del proceso GEOEPOCA (En Proceso / Completo)
+      t.NOMBRE_TOPOGRAFO,      -- Nombre del topógrafo que creó el proyecto
+      e.NOMBRE_EMPRESA         -- Nombre de la empresa a la que pertenece el proyecto
     FROM PROYECTO p
-    JOIN TOPOGRAFO t ON p._ID_TOPOGRAFO = t.ID_TOPOGRAFO
-    JOIN EMPRESA e ON p._ID_EMPRESA = e.ID_EMPRESA
+    JOIN TOPOGRAFO t ON p._ID_TOPOGRAFO = t.ID_TOPOGRAFO  -- Unión con la tabla TOPOGRAFO
+    JOIN EMPRESA e ON p._ID_EMPRESA = e.ID_EMPRESA        -- Unión con la tabla EMPRESA
   `);
-  return rows;
+
+  return rows; // Retorna el listado de proyectos con topógrafo y empresa
 };
 
-/* // Crear un proyecto nuevo con ruta y estados generados por backend
-export const crearProyecto = async (proyecto) => {
+
+/* ---------------------------------------------
+  Crear un nuevo proyecto
+  --------------------------------------------- 
+
+ * Inserta un nuevo proyecto en la base de datos.
+ * Esta función es utilizada cuando un usuario crea un proyecto desde el frontend.*/
+
+export const crearProyecto = async (datosProyecto) => {
+  const {
+    nombre_proyecto,      // Nombre del proyecto (ej. CAMPANO-0725)
+    fecha_creacion,       // Fecha de creación (generada en el frontend o backend)
+    ruta_proyecto,        // Ruta generada por el script Python
+    radio_busqueda,       // Distancia de búsqueda en km (ej. 150)
+    _id_topografo,        // ID del topógrafo que crea el proyecto 
+    _id_empresa           // ID de la empresa que lo solicita
+  } = datosProyecto;
+
+  // Ejecutamos el INSERT con prepared statements (más seguro)
+  const [resultado] = await db.query(`
+    INSERT INTO PROYECTO ( NOMBRE_PROYECTO, FECHA_CREACION, RUTA_PROYECTO, RADIO_BUSQUEDA, ESTADO_RED, ESTADO_GEO, _ID_TOPOGRAFO, _ID_EMPRESA )
+    VALUES (?, ?, ?, ?, 'En Proceso', 'En Proceso', ?, ?)`,
+    [nombre_proyecto, fecha_creacion, ruta_proyecto, radio_busqueda, _id_topografo, _id_empresa]);
+
+  //console.log(resultado)
+  // Retorna el ID del nuevo proyecto creado
+  return { id: resultado.insertId };
+};
+
+/* ---------------------------------------------
+  Actualizar un proyecto existente
+  ---------------------------------------------
+ * Esta función permite modificar los campos editables de un proyecto,
+ * incluyendo el nombre del proyecto, su ruta en disco, el radio de búsqueda
+ * y los estados de los procesos (RED y GEOEPOCA).
+ *
+ * Si el nombre del proyecto cambia, debe actualizarse también la ruta 
+ * almacenada en la base de datos (ya que depende del nombre del proyecto).
+ *
+ * IMPORTANTE: No permite modificar ni el ID del proyecto, ni la empresa,
+ * ni la fecha de creación (por integridad del historial).
+ *        Puede incluir:
+ *           - nuevo_nombre_proyecto (string)
+ *           - ruta_actual (string, opcional para renombrado físico)
+ *           - ruta_nueva (string, si cambia el nombre del proyecto)
+ *           - radio_busqueda (int)
+ *           - estado_red (string)
+ *           - estado_geo (string)
+ * @returns {object} Resultado de la operación (rows afectadas, etc.)
+ */
+  export const actualizarProyecto = async (id_proyecto, nuevosDatos) => {
     const {
-      nombre,
-      fecha,
-      ruta, // ← generada por el script Python
-      radio,
-      id_topografo,
-      id_empresa
-    } = proyecto;
+      nuevo_nombre_proyecto,   // Nuevo nombre (opcional)            
+      ruta_nueva,              // Nueva ruta esperada en disco (si se cambia el nombre)
+      radio_busqueda,          // Nuevo radio (si se desea modificar)
+      estado_red,              // Estado actualizado del proceso RED
+      estado_geo,              // Estado actualizado del proceso GEOEPOCA
+    } = nuevosDatos;
   
-    const estado_red = 'En Proceso';
-    const estado_geo = 'En Proceso';
+    // Lista de campos a modificar (se arma dinámicamente)
+    const campos = [];
+    const valores = [];
   
-    const [result] = await db.query(`
-      INSERT INTO PROYECTO
-        (NOMBRE_PROYECTO, FECHA_CREACION, RUTA_PROYECTO, RADIO_BUSQUEDA, ESTADO_RED, ESTADO_GEO, _ID_TOPOGRAFO, _ID_EMPRESA)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `, [nombre, fecha, ruta, radio, estado_red, estado_geo, id_topografo, id_empresa]);
+    if (nuevo_nombre_proyecto) {
+      campos.push('NOMBRE_PROYECTO = ?');
+      valores.push(nuevo_nombre_proyecto);
+    }
   
-    return result.insertId;
+    if (ruta_nueva) {
+      campos.push('RUTA_PROYECTO = ?');
+      valores.push(ruta_nueva);
+    }
+  
+    if (radio_busqueda !== undefined) {
+      campos.push('RADIO_BUSQUEDA = ?');
+      valores.push(radio_busqueda);
+    }
+  
+    if (estado_red) {
+      campos.push('ESTADO_RED = ?');
+      valores.push(estado_red);
+    }
+  
+    if (estado_geo) {
+      campos.push('ESTADO_GEO = ?');
+      valores.push(estado_geo);
+    }
+  
+    // Si no se envió ningún campo modificable, se lanza un error
+    if (campos.length === 0) {
+      throw new Error('No se proporcionaron campos para actualizar.');
+    }
+  
+    // Agrega el ID al final para el WHERE
+    valores.push(id_proyecto);
+  
+    // Construye la consulta SQL dinámica
+    const consulta = `UPDATE PROYECTO SET ${campos.join(', ')} WHERE ID_PROYECTO = ?`;
+  
+    // Ejecuta el query con los valores
+    const [resultado] = await db.query(consulta, valores);
+  
+    // Devuelve el resultado de la operación (puede incluir el número de filas afectadas)
+    return resultado;
   };
   
 
-
-
-/* // 
-
-// Crear un nuevo proyecto
-export const crearProyecto = async (proyecto) => {
-  const {
-    nombre,
-    fecha,
-    ruta,
-    radio,
-    estado_red,
-    estado_geo,
-    id_topografo,
-    id_empresa
-  } = proyecto;
-
-  const [result] = await db.query(`
-    INSERT INTO PROYECTO (
-      NOMBRE_PROYECTO,
-      FECHA_CREACION,
-      RUTA_PROYECTO,
-      RADIO_BUSQUEDA,
-      ESTADO_RED,
-      ESTADO_GEO,
-      _ID_TOPOGRAFO,
-      _ID_EMPRESA
-    )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-  `, [nombre, fecha, ruta, radio, estado_red, estado_geo, id_topografo, id_empresa]);
-
-  return result.insertId;
-};
-
-// Actualizar un proyecto con campos dinámicos
-export const actualizarProyecto = async (id, datos) => {
-  const campos = [];  // Lista de campos a actualizar
-  const valores = []; // Valores correspondientes
-
-  if (datos.nombre) {
-    campos.push('NOMBRE_PROYECTO = ?');
-    valores.push(datos.nombre);
-  }
-
-  if (datos.fecha) {
-    campos.push('FECHA_CREACION = ?');
-    valores.push(datos.fecha);
-  }
-
-  if (datos.ruta) {
-    campos.push('RUTA_PROYECTO = ?');
-    valores.push(datos.ruta);
-  }
-
-  if (datos.radio) {
-    campos.push('RADIO_BUSQUEDA = ?');
-    valores.push(datos.radio);
-  }
-
-  if (datos.estado_red) {
-    campos.push('ESTADO_RED = ?');
-    valores.push(datos.estado_red);
-  }
-
-  if (datos.estado_geo) {
-    campos.push('ESTADO_GEO = ?');
-    valores.push(datos.estado_geo);
-  }
-
-  // Si no se recibe ningún campo, no hacemos nada
-  if (campos.length === 0) {
-    return 0;
-  }
-
-  // El ID se agrega al final para el WHERE
-  valores.push(id);
-
-  const [result] = await db.query(
-    `UPDATE PROYECTO SET ${campos.join(', ')} WHERE ID_PROYECTO = ?`,
-    valores
-  );
-
-  return result.affectedRows;
-};
-
-// Eliminar un proyecto
-export const eliminarProyecto = async (id) => {
-  const [result] = await db.query('DELETE FROM PROYECTO WHERE ID_PROYECTO = ?', [id]);
-  return result.affectedRows;
-};
- */ 
+  export const ocultarProyecto = async (id_proyecto) => {
+    const estadoFinal = 'Finalizado';
+    const [result] = await db.query('UPDATE PROYECTO SET ESTADO_RED = ?, ESTADO_GEO = ? WHERE ID_PROYECTO = ?',[estadoFinal, estadoFinal, id_proyecto]);
+  
+    if (result.affectedRows === 0) return null; // No se actualizó nada
+  
+    return true; // Actualización exitosa
+  };
+  
