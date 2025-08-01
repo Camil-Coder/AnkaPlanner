@@ -1,5 +1,5 @@
 // Importar modelos
-import { crearDiaRastreo, validarDiaRastreoUnico } from '../models/diaRastreoModel.js';
+import { crearDiaRastreo, validarDiaRastreoUnico, BuscarNombresDias} from '../models/diaRastreoModel.js';
 import { buscarRutaProyecto } from '../models/proyectoModel.js';
 
 // Importar runners
@@ -66,4 +66,20 @@ export const postDiaRastreo = async (req, res) => {
     console.error('❌ Error en postDiaRastreo:', error.message);
     res.status(500).json({ mensaje: 'Error interno al crear día de rastreo', error: error.message });
   }
+};
+
+
+
+export const getDiaRastreo = async (req,res) =>{
+  const id_proyecto = req.params.id
+      try {
+          // 
+          const dias_rastreos = await BuscarNombresDias(id_proyecto)
+          
+          // Respuesta en formato JSON
+          res.json(dias_rastreos)
+          
+      } catch (error) {
+          res.status(500).json({ error: "Error al obtner el nombre de la empresa" })
+      }
 };

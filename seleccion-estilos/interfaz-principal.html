@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AnkaPlanner</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #F5F8FB;
+      color: #2C2C2C;
+    }
+
+    header {
+      background-color: #2F4D73;
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .botones-header button {
+      margin-left: 1rem;
+      background-color: #F47C27;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .dashboard {
+      padding: 2rem;
+    }
+
+    .stats {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .card {
+      background-color: #E3E9F1;
+      padding: 1rem;
+      border-radius: 10px;
+      text-align: center;
+      flex: 1;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: white;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+
+    th, td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid #E3E9F1;
+    }
+
+    th {
+      background-color: #E3E9F1;
+    }
+
+    tr:hover {
+      background-color: #FDB074;
+      cursor: pointer;
+    }
+
+    .edit-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .edit-icon {
+      width: 20px;
+    }
+
+    .subrow {
+      background-color: #F5F8FB;
+      font-style: italic;
+      color: #5B5B5B;
+    }
+
+    .guardar-btn {
+      background-color: #F47C27;
+      color: white;
+      padding: 0.3rem 0.6rem;
+      border: none;
+      border-radius: 5px;
+      margin-left: 5px;
+      display: none;
+      cursor: pointer;
+    }
+
+    .cancelar-btn {
+      background-color: #d9534f; /* rojo */
+      color: white;
+      padding: 0.3rem 0.6rem;
+      border: none;
+      border-radius: 5px;
+      margin-left: 5px;
+      display: none;
+      cursor: pointer;
+    }
+
+    select:disabled, input:disabled {
+      background-color: #eee;
+      color: #888;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>AnkaPlanner</h1>
+  <div class="botones-header">
+    <button>+ Nuevo Proyecto</button>
+    <button>Ver Reportes</button>
+  </div>
+</header>
+
+<main class="dashboard">
+  <section class="stats">
+    <div class="card">
+      <h2>12</h2>
+      <p>Total de proyectos</p>
+    </div>
+    <div class="card">
+      <h2>5</h2>
+      <p>RedGeoScan: Completo</p>
+    </div>
+    <div class="card">
+      <h2>3</h2>
+      <p>Cambio de Época: En Proceso</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Proyectos</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Nombre Proyecto</th>
+          <th>Empresa</th>
+          <th>Fecha Creación</th>
+          <th>Radio Búsqueda</th>
+          <th>Días Rastreo</th>
+          <th>GPS</th>
+          <th>Topógrafo</th>
+          <th>Estado RedGeoScan</th>
+          <th>Estado Cambio de Época</th>
+          <th>Estado Global</th>
+          <th>Editar</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <!-- Proyecto A -->
+        <tr onclick="toggleSubrows(this)" data-index="0">
+          <td>Proyecto A</td>
+          <td>GeoSurvey</td>
+          <td>2024-04-01</td>
+          <td><input type="number" class="editable editable-0" value="100" min="80" max="250" disabled /></td>
+          <td>3</td>
+          <td>2</td>
+          <td>
+            <select class="editable editable-0" disabled>
+              <option>Pedro Ruiz</option>
+              <option>Laura Méndez</option>
+              <option>Juan Díaz</option>
+            </select>
+          </td>
+          <td>En Proceso</td>
+          <td>Completo</td>
+          <td>
+            <select class="editable editable-0" disabled>
+              <option selected>En Proceso</option>
+              <option>En Espera</option>
+              <option>Finalizado</option>
+            </select>
+          </td>
+          <td>
+            <button class="edit-btn" onclick="activarEdicion(event, 0)">
+              <img src="https://img.icons8.com/ios-filled/20/key.png" class="edit-icon" />
+            </button>
+            <button class="guardar-btn" id="guardar-btn-0" onclick="guardarCambios(event, 0)">Guardar</button>
+            <button class="cancelar-btn" id="cancelar-btn-0" onclick="cancelarCambios(event, 0)">Cancelar</button>
+          </td>
+        </tr>
+        <tr class="subrow hidden"><td colspan="11">RedGeoScan: Información técnica detallada...</td></tr>
+        <tr class="subrow hidden"><td colspan="11">Cambio de Época: Información pendiente...</td></tr>
+
+        <!-- Proyecto B -->
+        <tr onclick="toggleSubrows(this)" data-index="1">
+          <td>Proyecto B</td>
+          <td>TopoTech</td>
+          <td>2024-03-15</td>
+          <td><input type="number" class="editable editable-1" value="150" min="80" max="250" disabled /></td>
+          <td>4</td>
+          <td>3</td>
+          <td>
+            <select class="editable editable-1" disabled>
+              <option>Pedro Ruiz</option>
+              <option>Laura Méndez</option>
+              <option>Juan Díaz</option>
+            </select>
+          </td>
+          <td>Completo</td>
+          <td>En Espera</td>
+          <td>
+            <select class="editable editable-1" disabled>
+              <option>En Proceso</option>
+              <option selected>En Espera</option>
+              <option>Finalizado</option>
+            </select>
+          </td>
+          <td>
+            <button class="edit-btn" onclick="activarEdicion(event, 1)">
+              <img src="https://img.icons8.com/ios-filled/20/key.png" class="edit-icon" />
+            </button>
+            <button class="guardar-btn" id="guardar-btn-1" onclick="guardarCambios(event, 1)">Guardar</button>
+            <button class="cancelar-btn" id="cancelar-btn-1" onclick="cancelarCambios(event, 1)">Cancelar</button>
+          </td>
+        </tr>
+        <tr class="subrow hidden"><td colspan="11">RedGeoScan: Entregado en abril.</td></tr>
+        <tr class="subrow hidden"><td colspan="11">Cambio de Época: Validación en curso.</td></tr>
+
+      </tbody>
+    </table>
+  </section>
+</main>
+
+<script>
+  function toggleSubrows(row) {
+    if (row.classList.contains('en-edicion')) return;
+    const subrow1 = row.nextElementSibling;
+    const subrow2 = subrow1.nextElementSibling;
+    subrow1.classList.toggle('hidden');
+    subrow2.classList.toggle('hidden');
+  }
+
+  function activarEdicion(event, index) {
+    event.stopPropagation();
+    const row = document.querySelector(`tr[data-index="${index}"]`);
+    row.classList.add("en-edicion");
+
+    document.querySelectorAll(`.editable-${index}`).forEach(el => el.disabled = false);
+    document.getElementById(`guardar-btn-${index}`).style.display = 'inline-block';
+    document.getElementById(`cancelar-btn-${index}`).style.display = 'inline-block';
+  }
+
+  function guardarCambios(event, index) {
+    event.stopPropagation();
+    const row = document.querySelector(`tr[data-index="${index}"]`);
+    document.querySelectorAll(`.editable-${index}`).forEach(el => el.disabled = true);
+    document.getElementById(`guardar-btn-${index}`).style.display = 'none';
+    document.getElementById(`cancelar-btn-${index}`).style.display = 'none';
+    row.classList.remove("en-edicion");
+    alert("✅ Cambios guardados correctamente.");
+  }
+
+  function cancelarCambios(event, index) {
+    event.stopPropagation();
+    const row = document.querySelector(`tr[data-index="${index}"]`);
+    document.querySelectorAll(`.editable-${index}`).forEach(el => el.disabled = true);
+    document.getElementById(`guardar-btn-${index}`).style.display = 'none';
+    document.getElementById(`cancelar-btn-${index}`).style.display = 'none';
+    row.classList.remove("en-edicion");
+  }
+</script>
+
+</body>
+</html>

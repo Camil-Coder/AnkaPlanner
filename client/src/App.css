@@ -1,0 +1,22 @@
+#root {
+  box-sizing: border-box;
+  margin: 0 auto;
+}
+
+/* Boton Crear proyecto */
+
+.boton-crear {
+  background-color: #F47C27 !important;
+  border: none !important;
+  color: white !important;
+  transition: background-color 0.2s ease !important;
+  margin-right: 30px !important;
+}
+
+.boton-crear:hover {
+  background-color: #FDB074 !important;
+}
+
+
+
+/*  */

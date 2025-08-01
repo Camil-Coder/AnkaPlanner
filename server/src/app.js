@@ -38,6 +38,6 @@ app.use('/api', router);
 const PORT = process.env.PORT || 3000;
 
 // Encendemos el servidor en el puerto definido y mostramos un mensaje en consola
-app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}/api`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Servidor corriendo en http://0.0.0.0:${PORT}/api`);
 });

@@ -5,27 +5,27 @@ import { db } from '../config/db.js';
 
 // Esta función valida si un día de rastreo ya existe para un proyecto dado
 export const validarDiaRastreoUnico = async (nombre_dia, id_proyecto) => {
-    try {
-      const [resultado] = await db.query(
-        `SELECT COUNT(*) AS cantidad FROM DIA_RASTREO 
+  try {
+    const [resultado] = await db.query(
+      `SELECT COUNT(*) AS cantidad FROM DIA_RASTREO 
          WHERE NOMBRE_DIA_RASTREO = ? AND _ID_PROYECTO = ?`,
-        [nombre_dia, id_proyecto]
-      );
-  
-      // Si la cantidad es mayor que 0, ya existe → retornar 0 (no es único)
-      if (resultado[0].cantidad > 0) {
-        return 0;
-      }
-  
-      // Si no existe → retornar 1 (es único)
-      return 1;
-  
-    } catch (error) {
-      console.error('❌ Error al validar día de rastreo:', error.message);
-      return 0; // Por seguridad retornamos 0 (como si ya existiera)
+      [nombre_dia, id_proyecto]
+    );
+
+    // Si la cantidad es mayor que 0, ya existe → retornar 0 (no es único)
+    if (resultado[0].cantidad > 0) {
+      return 0;
     }
-  };
-  
+
+    // Si no existe → retornar 1 (es único)
+    return 1;
+
+  } catch (error) {
+    console.error('❌ Error al validar día de rastreo:', error.message);
+    return 0; // Por seguridad retornamos 0 (como si ya existiera)
+  }
+};
+
 
 
 // Esta función almacena la información en la tabla DIA_RASTREO
@@ -57,11 +57,20 @@ export const crearDiaRastreo = async (datosDiaRastreo) => {
 /* ---------------------------------------------
   Busqueda de la ruta guardada de un proyecto
   ---------------------------------------------*/
-  export const buscarRutaBaseRed = async (id_diaRastreo) =>{
-    const [rows] = await db.query('SELECT RUTA_DIA_RASTREO_RED FROM DIA_RASTREO WHERE ID_DIA_RASTREO = ?', [id_diaRastreo]);
-    // Si no lo encuentra retornamos null
-    if (rows.length === 0){
-      return null;
-    } 
-    return rows[0].RUTA_DIA_RASTREO_RED;
-  };
+export const buscarRutaBaseRed = async (id_diaRastreo) => {
+  const [rows] = await db.query('SELECT RUTA_DIA_RASTREO_RED FROM DIA_RASTREO WHERE ID_DIA_RASTREO = ?', [id_diaRastreo]);
+  // Si no lo encuentra retornamos null
+  if (rows.length === 0) {
+    return null;
+  }
+  return rows[0].RUTA_DIA_RASTREO_RED;
+};
+
+
+/* ---------------------------------------------
+  Busqueda de los nombres dia rastro por id proyecto
+  ---------------------------------------------*/
+export const BuscarNombresDias = async (id_proyecto) =>{
+  const [rows] = await db.query('SELECT * FROM DIA_RASTREO WHERE _ID_PROYECTO = ?', [id_proyecto]);
+  return rows
+};
