@@ -28,12 +28,18 @@ export const actualizarTopografo = async (id, nombre) => {
     return result.affectedRows; // Devuelve cuántas filas fueron afectadas (0 o 1)
   };
 
-// Esta función elimina un TOPOGRAFO por su ID
+// Modelo: marca como eliminado cambiando el nombre
 export const eliminarTopografo = async (id) => {
-    const [result] = await db.query(
-      'DELETE FROM TOPOGRAFO WHERE ID_TOPOGRAFO = ?',
-      [id] // Reemplaza el ?
-    );
-    return result.affectedRows; // Devuelve cuántas filas fueron eliminadas (0 o 1)
-  };
-  
+  const [result] = await db.query(
+    `UPDATE TOPOGRAFO
+     SET NOMBRE_TOPOGRAFO =
+       CASE
+         WHEN RIGHT(NOMBRE_TOPOGRAFO, 10) = '-eliminado'
+           THEN NOMBRE_TOPOGRAFO
+         ELSE CONCAT(NOMBRE_TOPOGRAFO, '-eliminado')
+       END
+     WHERE ID_TOPOGRAFO = ?`,
+    [id]
+  );
+  return result.affectedRows; // 0 si no existe, 1 si se actualizó
+};

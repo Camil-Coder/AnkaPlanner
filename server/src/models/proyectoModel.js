@@ -76,7 +76,7 @@ export const crearProyecto = async (datosProyecto) => {
   // Ejecutamos el INSERT con prepared statements (más seguro)
   const [resultado] = await db.query(`
     INSERT INTO PROYECTO ( NOMBRE_PROYECTO, FECHA_CREACION, RUTA_PROYECTO, RADIO_BUSQUEDA, ESTADO_RED, ESTADO_GEO, _ID_TOPOGRAFO, _ID_EMPRESA )
-    VALUES (?, ?, ?, ?, 'En Proceso', 'En Proceso', ?, ?)`,
+    VALUES (?, ?, ?, ?, 'Sin Dias Rastreos', 'Sin Dias Rastreos', ?, ?)`,
     [nombre_proyecto, fecha_creacion, ruta_proyecto, radio_busqueda, _id_topografo, _id_empresa]);
 
   //console.log(resultado)
@@ -84,84 +84,31 @@ export const crearProyecto = async (datosProyecto) => {
   return { id: resultado.insertId };
 };
 
-/* ---------------------------------------------
-  Actualizar un proyecto existente
-  ---------------------------------------------
- * Esta función permite modificar los campos editables de un proyecto,
- * incluyendo el nombre del proyecto, su ruta en disco, el radio de búsqueda
- * y los estados de los procesos (RED y GEOEPOCA).
- *
- * Si el nombre del proyecto cambia, debe actualizarse también la ruta 
- * almacenada en la base de datos (ya que depende del nombre del proyecto).
- *
- * IMPORTANTE: No permite modificar ni el ID del proyecto, ni la empresa,
- * ni la fecha de creación (por integridad del historial).
- *        Puede incluir:
- *           - nuevo_nombre_proyecto (string)
- *           - ruta_actual (string, opcional para renombrado físico)
- *           - ruta_nueva (string, si cambia el nombre del proyecto)
- *           - radio_busqueda (int)
- *           - estado_red (string)
- *           - estado_geo (string)
- * @returns {object} Resultado de la operación (rows afectadas, etc.)
- */
-  export const actualizarProyecto = async (id_proyecto, nuevosDatos) => {
-    const {
-      nuevo_nombre_proyecto,   // Nuevo nombre (opcional)            
-      ruta_nueva,              // Nueva ruta esperada en disco (si se cambia el nombre)
-      radio_busqueda,          // Nuevo radio (si se desea modificar)
-      estado_red,              // Estado actualizado del proceso RED
-      estado_geo,              // Estado actualizado del proceso GEOEPOCA
-    } = nuevosDatos;
-  
-    // Lista de campos a modificar (se arma dinámicamente)
-    const campos = [];
-    const valores = [];
-  
-    if (nuevo_nombre_proyecto) {
-      campos.push('NOMBRE_PROYECTO = ?');
-      valores.push(nuevo_nombre_proyecto);
-    }
-  
-    if (ruta_nueva) {
-      campos.push('RUTA_PROYECTO = ?');
-      valores.push(ruta_nueva);
-    }
-  
-    if (radio_busqueda !== undefined) {
-      campos.push('RADIO_BUSQUEDA = ?');
-      valores.push(radio_busqueda);
-    }
-  
-    if (estado_red) {
-      campos.push('ESTADO_RED = ?');
-      valores.push(estado_red);
-    }
-  
-    if (estado_geo) {
-      campos.push('ESTADO_GEO = ?');
-      valores.push(estado_geo);
-    }
-  
-    // Si no se envió ningún campo modificable, se lanza un error
-    if (campos.length === 0) {
-      throw new Error('No se proporcionaron campos para actualizar.');
-    }
-  
-    // Agrega el ID al final para el WHERE
-    valores.push(id_proyecto);
-  
-    // Construye la consulta SQL dinámica
-    const consulta = `UPDATE PROYECTO SET ${campos.join(', ')} WHERE ID_PROYECTO = ?`;
-  
-    // Ejecuta el query con los valores
-    const [resultado] = await db.query(consulta, valores);
-  
-    // Devuelve el resultado de la operación (puede incluir el número de filas afectadas)
-    return resultado;
-  };
-  
+// Actualizar un proyecto existente (solo radio_busqueda, estado_red, estado_geo)
+export const actualizarProyecto = async (id_proyecto, nuevosDatos) => {
+  const { radio_busqueda, estado_red, estado_geo } = nuevosDatos;
 
+  const campos = [];
+  const valores = [];
+
+  if (radio_busqueda !== undefined) { campos.push('RADIO_BUSQUEDA = ?'); valores.push(radio_busqueda); }
+  if (estado_red !== undefined)     { campos.push('ESTADO_RED = ?');     valores.push(estado_red); }
+  if (estado_geo !== undefined)     { campos.push('ESTADO_GEO = ?');     valores.push(estado_geo); }
+
+  if (campos.length === 0) throw new Error('No se proporcionaron campos permitidos.');
+
+  const sql = `UPDATE PROYECTO SET ${campos.join(', ')} WHERE ID_PROYECTO = ?`;
+  valores.push(id_proyecto);
+
+  const [resultado] = await db.query(sql, valores);
+  return resultado; // affectedRows, etc.
+};
+
+
+
+  /* ---------------------------------------------
+  Ocultar un proyecto existente
+  ---------------------------------------------*/
   export const ocultarProyecto = async (id_proyecto) => {
     const estadoFinal = 'Finalizado';
     const [result] = await db.query('UPDATE PROYECTO SET ESTADO_RED = ?, ESTADO_GEO = ? WHERE ID_PROYECTO = ?',[estadoFinal, estadoFinal, id_proyecto]);

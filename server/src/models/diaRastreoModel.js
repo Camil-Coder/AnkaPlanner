@@ -30,7 +30,28 @@ export const validarDiaRastreoUnico = async (nombre_dia, id_proyecto) => {
 
 // Esta función almacena la información en la tabla DIA_RASTREO
 export const crearDiaRastreo = async (datosDiaRastreo) => {
-  const { nombre_dia, ruta_dia_rastreo_red, ruta_dia_rastreo_geo, id_proyecto, id_topografo, id_empresa } = datosDiaRastreo;
+  const { nombre_dia, ruta_dia_rastreo_red, ruta_dia_rastreo_geo, id_proyecto } = datosDiaRastreo;
+  let id_topografo = null;
+  let id_empresa = null;
+
+  try {
+    const [filas] = await db.query(
+      'SELECT _ID_TOPOGRAFO, _ID_EMPRESA FROM PROYECTO WHERE ID_PROYECTO = ? LIMIT 1',
+      [id_proyecto]
+    );
+
+    if (filas.length === 0) {
+      console.error('❌ No se encontró ningún día de rastreo para ese proyecto');
+      return null;
+    }
+
+    id_topografo = filas[0]._ID_TOPOGRAFO;
+    id_empresa = filas[0]._ID_EMPRESA;
+
+  } catch (error) {
+    console.error('❌ Error al obtener topógrafo y empresa:', error.message);
+    return null;
+  }
 
   try {
     const [resultado] = await db.query(`
@@ -54,6 +75,7 @@ export const crearDiaRastreo = async (datosDiaRastreo) => {
 };
 
 
+
 /* ---------------------------------------------
   Busqueda de la ruta guardada de un proyecto
   ---------------------------------------------*/
@@ -70,7 +92,7 @@ export const buscarRutaBaseRed = async (id_diaRastreo) => {
 /* ---------------------------------------------
   Busqueda de los nombres dia rastro por id proyecto
   ---------------------------------------------*/
-export const BuscarNombresDias = async (id_proyecto) =>{
+export const BuscarNombresDias = async (id_proyecto) => {
   const [rows] = await db.query('SELECT * FROM DIA_RASTREO WHERE _ID_PROYECTO = ?', [id_proyecto]);
   return rows
 };

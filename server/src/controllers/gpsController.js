@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { runCrearGpsEnRastreo } from '../utils_python/runners/run_crear_gps_en_rastreo.js';
-import { crearGpsBase } from '../models/gpsModel.js';
+import { crearGpsBase, buscarGps, validarGpsUnico } from '../models/gpsModel.js';
 import { buscarRutaBaseRed } from '../models/diaRastreoModel.js';
 
 // Resolver __dirname en ESModules
@@ -16,11 +16,15 @@ export const postGpsBase = async (req, res) => {
   let carpetaTemp = null;
 
   try {
-    const { nombre_gps, id_dia_rastreo, id_proyecto, id_topografo, id_empresa } = req.body;
+    const { nombre_gps, id_dia_rastreo, id_proyecto } = req.body;
 
-    if (!nombre_gps || !id_dia_rastreo || !id_proyecto || !id_topografo || !id_empresa || !req.files) {
-      return res.status(400).json({ mensaje: 'Faltan datos obligatorios o archivos' });
+    if (!nombre_gps || !id_dia_rastreo || !id_proyecto || !req.files) {
+      return res.status(400).json({ mensaje: 'Faltan datos obligatorios o archivos..' });
     }
+
+    const ValidarNombreGps = await validarGpsUnico(nombre_gps, id_dia_rastreo)
+    if (!ValidarNombreGps) return res.status(409).json({ mensaje: `Ya existe un GPS con el nombre '${nombre_gps}' en este dia rastreo.` });
+
 
     const ruta_base = await buscarRutaBaseRed(id_dia_rastreo);
     console.log("--------------------");
@@ -68,8 +72,6 @@ export const postGpsBase = async (req, res) => {
       ruta_obs: resultado.rutaObsFinal,
       id_dia_rastreo,
       id_proyecto,
-      id_topografo,
-      id_empresa,
     });
 
     if (!dbResult) {
@@ -106,3 +108,19 @@ export const postGpsBase = async (req, res) => {
     }
   }
 };
+
+export const getGpsBase = async (req, res) => {
+  const id_diaRastreo = req.params.id
+      try {
+          // 
+          const gps_dias_rastreos = await buscarGps(id_diaRastreo)
+          
+          // Respuesta en formato JSON
+          res.json(gps_dias_rastreos)
+          
+      } catch (error) {
+          res.status(500).json({ error: "Error al obtner los gps" })
+      }
+};
+
+

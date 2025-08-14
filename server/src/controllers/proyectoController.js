@@ -64,70 +64,46 @@ export const postProyecto = async (req, res) => {
 };
 
 
-/* ---------------------------------------------
-  Controlador PUT /api/proyectos/:id
-  ---------------------------------------------
-  Permite actualizar un proyecto existente.
-
-  - Si el nombre del proyecto cambia, se renombra la carpeta y se actualiza la ruta.
-  - No permite cambiar la empresa, la fecha de creación ni el ID del proyecto.
---------------------------------------------- */
+// PUT /api/proyectos/:id
 export const putProyecto = async (req, res) => {
   try {
     const id_proyecto = req.params.id;
-    const { nombre_antiguo, nombre_nuevo, radio_busqueda, estado_red, estado_geo, _id_empresa } = req.body;
-    let ruta_proyecto_actual = null;
-    let empresa_nombre = null;
-    
-    // Verificar si se desea cambiar el nombre del proyecto
-    if(nombre_nuevo){
-      
-      //********************************************************************************************************************************** */
-      try { // Funcion poara validar si el nuevo nombre del proyecto ya existe
-        
-        const yaExiste = await buscarNombreProyecto(nombre_nuevo) 
-        if (yaExiste >= 1) return res.status(409).json({ mensaje: `Ya existe un proyecto con el nombre '${nombre_nuevo}'` }); 
-        
-        
-      } catch (error) { return res.status(500).json({ mensaje: `Error interno al verificar el nombre del proyecto` })}// en caso de error
-      
-      //********************************************************************************************************************************** */
-      try { // Funcion para obtener el nombre de una empresa por su ID
-        
-        empresa_nombre = await obtenerNombreEmpresaPorId(_id_empresa)
-        if (!empresa_nombre) return res.status(409).json({ mensaje: `No se encontro el ID de este proyecto` })
-          
-        } catch (error) { return res.status(500).json({ mensaje: `Error interno al obtener el nombre de la empresa`, errores: {error} })}// en caso de error
-        
-        //********************************************************************************************************************************** */
-        
-        try { // Funcion para ejecutar el Runner que corre el Script en PYTHON para renombrar una carpeta
-          
-          ruta_proyecto_actual = await renombrarCarpetaProyecto(empresa_nombre, nombre_antiguo, nombre_nuevo);
-          if (!ruta_proyecto_actual) return res.status(409).json({ mensaje: `Error interno el proyecto no existe en el Disco`})
-            
-          } catch (error) { return res.status(500).json({ mensaje: `Error interno al renombrar el proyecto` }) }
-          
-          //**********************************************************************************************************************************
+
+    // Acepta snake_case y MAYÚSCULAS del front
+    const radio_body = req.body.radio_busqueda ?? req.body.RADIO_BUSQUEDA;
+    const estado_red_body = req.body.estado_red ?? req.body.ESTADO_RED;
+    const estado_geo_body = req.body.estado_geo ?? req.body.ESTADO_GEO;
+
+    const datos = {};
+
+    // Validación ÚNICA: radio en rango
+    if (radio_body !== undefined) {
+      const num = Number(radio_body);
+      if (Number.isNaN(num) || num < 80 || num > 250) {
+        return res.status(400).json({ mensaje: 'radio_busqueda debe estar entre 80 y 250.' });
+      }
+      datos.radio_busqueda = num;
     }
-    
-    // Actualizamos el proyecto en base de datos
-    const resultado = await actualizarProyecto(id_proyecto, {
-      nuevo_nombre_proyecto: nombre_nuevo,
-      ruta_nueva: ruta_proyecto_actual,
-      radio_busqueda,
-      estado_red,
-      estado_geo
-    });
-    
-    // Respondemos con éxito
-    res.status(200).json({ mensaje: '✅ Proyecto actualizado correctamente.', ruta_nueva: ruta_proyecto_actual, resultado });
-    
-  } catch (error) {
-    console.error('❌ Error al actualizar proyecto:', error);
-    res.status(500).json({ mensaje: 'Error interno al actualizar el proyecto.' });
+
+    // Estados: SIN validación de contenido (solo se permite actualizarlos)
+    if (estado_red_body !== undefined) datos.estado_red = String(estado_red_body);
+    if (estado_geo_body !== undefined) datos.estado_geo = String(estado_geo_body);
+
+    if (Object.keys(datos).length === 0) {
+      return res.status(400).json({
+        mensaje: 'Nada que actualizar. Solo se permite: radio_busqueda, estado_red, estado_geo.'
+      });
+    }
+
+    const resultado = await actualizarProyecto(id_proyecto, datos);
+    return res.status(200).json({ mensaje: 'Proyecto actualizado', resultado });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ mensaje: 'Error interno al actualizar', error: err?.message });
   }
 };
+
+
 
 
 

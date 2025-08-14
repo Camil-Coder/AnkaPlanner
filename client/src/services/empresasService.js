@@ -7,3 +7,14 @@ export const obtenerEmpresas = async () => {
   const res = await axios.get(API);
   return res.data;
 };
+
+
+export const crearEmpresa = async (nombre) => {
+  try {
+    const res = await axios.post(API, { nombre });
+    return res.data;
+  } catch (error) {
+    console.error('Error al crear empresa:', error);
+    throw error;
+  }
+};

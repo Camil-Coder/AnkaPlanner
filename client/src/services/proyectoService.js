@@ -12,3 +12,31 @@ export const obtenerProyectos = async () => {
   const res = await axios.get(API);
   return res.data;
 };
+
+// Solo ajustar esta función:
+export const actualizarProyecto = async (id, data = {}) => {
+  // Acepta tanto snake_case como MAYÚSCULAS desde el front
+  const radio_busqueda = data.radio_busqueda ?? data.RADIO_BUSQUEDA;
+  const estado_red     = data.estado_red     ?? data.ESTADO_RED;
+  const estado_geo     = data.estado_geo     ?? data.ESTADO_GEO;
+
+  const payload = {};
+  if (radio_busqueda !== undefined) payload.radio_busqueda = radio_busqueda;
+  if (estado_red !== undefined)     payload.estado_red     = estado_red;
+  if (estado_geo !== undefined)     payload.estado_geo     = estado_geo;
+
+  if (Object.keys(payload).length === 0) {
+    throw new Error('Sin campos válidos: use radio_busqueda, estado_red, estado_geo.');
+  }
+
+  const res = await axios.put(`${API}/${id}`, payload, {
+    headers: { 'Content-Type': 'application/json' },
+  });
+  return res.data;
+};
+
+
+export const finalizarProyecto = async (id) => {
+  const res = await axios.delete(`${API}/${id}`);
+  return res.data;
+}; 

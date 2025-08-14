@@ -61,23 +61,18 @@ export const putTopografo = async (req, res) => {
 };
 
 
-// 5. Controlador para eliminar una Topografo (DELETE /api/Topografo/:id)
+// Controlador: “elimina” renombrando
 export const deleteTopografo = async (req, res) => {
     try {
-        // Tomamos el ID desde los parámetros de la URL
-        const { id } = req.params;
-
-        // Llamamos al modelo para eliminar la Topografo
-        const resultado = await eliminarTopografo(id);
-
-        // Si no se eliminó nada, es porque no se encontró la Topografo
-        if (resultado === 0) {
-            res.status(404).json({ error: 'Topografo no encontrada' });
-        } else {
-            // Si fue exitoso, devolvemos un mensaje de confirmación
-            res.json({ mensaje: 'Topografo eliminada correctamente' });
-        }
+      const { id } = req.params;
+      const resultado = await eliminarTopografo(id);
+  
+      if (resultado === 0) {
+        return res.status(404).json({ error: 'Topógrafo no encontrado' });
+      }
+      res.json({ mensaje: 'Topógrafo marcado como eliminado' });
     } catch (error) {
-        res.status(500).json({ error: 'Error al eliminar al Topografo' });
+      res.status(500).json({ error: 'Error al marcar como eliminado al topógrafo' });
     }
-};
+  };
+  

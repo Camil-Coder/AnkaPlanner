@@ -1,6 +1,17 @@
+/* ====== Paleta RedGeoScan ====== */
+:root{
+  --rg-azul: #2F4D73;          /* Azul base */
+  --rg-naranja: #F47C27;       /* Naranja cálido */
+  --rg-naranjaHover: #FDB074;  /* Naranja pastel (hover) */
+  --rg-grisAzulado: #E3E9F1;   /* Gris azulado claro */
+  --rg-fondo: #F5F8FB;         /* Fondo claro */
+}
+
 #root {
   box-sizing: border-box;
   margin: 0 auto;
+  background-color: #f5f8fb;
+  height: 100vh;
 }
 
 /* Boton Crear proyecto */
@@ -19,4 +30,125 @@
 
 
 
-/*  */
+/* estilos de desplegables */
+
+[id^="rg-"][id$="-wrap"]{
+  background:#f8fafc;
+  padding:16px;
+}
+[id^="rg-"][id$="-inner"]{
+  width:98%;
+  margin:0 auto;
+  display:grid;
+  gap:16px;
+}
+[id^="rg-"][id$="-card"]{
+  background:#fff;
+  border:1px solid #e6e9ef;
+  border-left:4px solid #F47C27;
+  border-radius:12px;
+  overflow:hidden;
+  box-shadow:0 2px 8px rgba(16,24,40,0.05);
+}
+[id^="rg-"][id$="-header"]{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  background:linear-gradient(180deg,#ffffff,#f8fafc);
+  padding:10px 12px;
+  font-weight:600;
+  color:#0f172a;
+}
+[id^="rg-"][id$="-title"]{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+}
+[id^="rg-"][id$="-dot"]{
+  width:8px; height:8px; border-radius:999px;
+  background:#F47C27; display:inline-block;
+}
+[id^="rg-"][id$="-body"]{
+  background:#fff;
+  padding:12px;
+}
+
+
+/* ====== TablaDiasRastreos ====== */
+/* Encabezado: botón a la derecha */
+.rg-dias-header{
+  display:flex;
+  justify-content:end;
+  white-space:nowrap;
+  background: var(--rg-fondo);
+}
+
+/* Celdas de fila “título del día” y panel: sin bordes de tabla */
+.rg-cell-tight{
+  padding:0 !important;
+  border:0 !important;
+  background: transparent !important;
+}
+
+/* Botón crear día (coherente con paleta) */
+.boton-crear{
+  background: var(--rg-naranja) !important;
+  border: none !important;
+  border-radius: 10px !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+.boton-crear:hover{
+  background: var(--rg-naranjaHover) !important;
+}
+
+/* Fila compacta tipo “card” para cada día */
+.rg-dia-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding: 10px 12px;
+  margin: 8px;                          /* separa cada día de los bordes */
+  cursor:pointer;
+  user-select:none;
+
+  background: var(--rg-fondo);
+  border: 1px solid var(--rg-grisAzulado);
+  border-left: 4px solid var(--rg-naranja);
+  border-radius: 10px;
+  transition: background .2s ease, box-shadow .2s ease;
+}
+.rg-dia-row:hover{
+  background: rgba(0,0,0,0);
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+}
+.rg-dia-row.activo{
+  background:#fff;
+  box-shadow: 0 3px 12px rgba(0,0,0,.06);
+}
+
+/* Texto del nombre y flechita */
+.rg-dia-name{
+  font-weight:600;
+  color: var(--rg-azul);
+  letter-spacing:.2px;
+}
+.rg-dia-arrow{
+  font-size: 14px;
+  color: var(--rg-azul);
+}
+
+/* Panel desplegable (GPS) */
+.rg-dia-panel{
+  width:100%;
+  background:#fff;
+  border:1px solid var(--rg-grisAzulado);
+  border-left:4px solid var(--rg-azul);   /* acento azul para el contenido */
+  border-radius:10px;
+  padding:10px 12px;
+  margin: 0 8px 8px 8px;                  /* alineado con la tarjeta superior */
+}
+
+/* Evita que el hover de la tabla de Bootstrap ensucie el look */
+.table-hover tbody tr:hover > td{
+  background: transparent;
+}

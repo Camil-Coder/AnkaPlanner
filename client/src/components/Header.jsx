@@ -2,15 +2,15 @@ import React, { useState } from 'react';
 import { Container, Row, Col, Button } from 'react-bootstrap';
 import logoAnka from '../assets/logo-anka.png';
 import ModalCrearProyecto from './ModalCrearProyecto';
+import ModalGestionTopografos from './ModalGestionTopografos';
+import ModalGestionEmpresas from './ModalGestionEmpresas';
+
 
 const Header = ({ refrescarProyectos }) => {
-    const [mostrarModal, setMostrarModal] = useState(false);
-
-    // 👉 Maneja la apertura del modal
-    const abrirModal = () => setMostrarModal(true);
-
-    // 👉 Maneja el cierre del modal
-    const cerrarModal = () => setMostrarModal(false);
+    // Estado para cada modal
+    const [showEmpresas, setShowEmpresas] = useState(false);
+    const [showTopografos, setShowTopografos] = useState(false);
+    const [showCrearProyecto, setShowCrearProyecto] = useState(false);
 
     return (
         <>
@@ -21,20 +21,40 @@ const Header = ({ refrescarProyectos }) => {
                         <Col>
                             <img src={logoAnka} alt="Logo Anka" height="90" />
                         </Col>
-                        <Col style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-                            <Button className="boton-crear" onClick={abrirModal}>
-                                CREAR PROYECTO
+                        <Col style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '10px' }}>
+                            <Button className="boton-crear" onClick={() => setShowEmpresas(true)}>
+                                + EMPRESAS
+                            </Button>
+                            <Button className="boton-crear" onClick={() => setShowTopografos(true)}>
+                                + TOPOGRAFOS
+                            </Button>
+                            <Button className="boton-crear" onClick={() => setShowCrearProyecto(true)}>
+                                + NUEVO PROYECTO
                             </Button>
                         </Col>
                     </Row>
                 </Container>
             </header>
 
-            {/* MODAL para crear proyecto */}
+            {/* MODAL: Gestión de empresas */}
+            <ModalGestionEmpresas
+                show={showEmpresas}
+                onHide={() => setShowEmpresas(false)}
+                refrescarProyectos={refrescarProyectos}
+            />
+
+            {/* MODAL: Gestión de Topógrafos */}
+            <ModalGestionTopografos
+                show={showTopografos}
+                onHide={() => setShowTopografos(false)}
+                refrescarProyectos={refrescarProyectos}
+            />
+
+            {/* MODAL: Crear Proyecto */}
             <ModalCrearProyecto
-                show={mostrarModal}
-                handleClose={cerrarModal}
-                refrescarProyectos={refrescarProyectos} // ✅ función para refrescar tabla después de crear
+                show={showCrearProyecto}
+                handleClose={() => setShowCrearProyecto(false)}
+                refrescarProyectos={refrescarProyectos} // refresca la tabla al crear
             />
         </>
     );

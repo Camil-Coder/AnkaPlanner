@@ -10,10 +10,10 @@ import { runCrearCarpetasDiaRastreo } from '../utils_python/runners/run_crear_ca
  -------------------------------------*/
 export const postDiaRastreo = async (req, res) => {
   try {
-    const { nombre_dia, id_proyecto, id_topografo, id_empresa } = req.body;
+    const { nombre_dia, id_proyecto } = req.body;
 
     // Validación básica de datos obligatorios
-    if (!nombre_dia || !id_proyecto || !id_topografo || !id_empresa) {
+    if (!nombre_dia || !id_proyecto) {
       return res.status(400).json({ mensaje: 'Faltan datos obligatorios para crear el día de rastreo' });
     }
 
@@ -46,8 +46,6 @@ export const postDiaRastreo = async (req, res) => {
       ruta_dia_rastreo_red: rutaRastreo,
       ruta_dia_rastreo_geo: rutaReportes,
       id_proyecto,
-      id_topografo,
-      id_empresa
     });
 
     if (!resultado) {
