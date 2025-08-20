@@ -1,11 +1,11 @@
+//C:\BotAuto-Full\client\src\components\TablaDiasRastreos.jsx
 import React, { useEffect, useState } from 'react';
 import { Table, Spinner, Button } from 'react-bootstrap';
 import { obtenerDiasRastreos } from '../services/diasRastreosService';
 import ModalCrearDiaRastreo from './ModalCrearDiaRastreo';
 import { TablaGps } from './TablaGps'
-import NombreProyectoToggle from './NombreProyectoToggle';
 
-export const TablaDiasRastreos = ({ id_proyecto, radio_busqueda, estado_geo, cargarP, refrescar }) => {
+export const TablaDiasRastreos = ({ id_proyecto, fecha_creacion, radio_busqueda, estado_geo, cargarP, refrescar }) => {
 
     // MANEJO DE ESTADOD DE DIAS RASTREOS
     const [dias, setDias] = useState([]);
@@ -120,6 +120,7 @@ export const TablaDiasRastreos = ({ id_proyecto, radio_busqueda, estado_geo, car
                                             <div className="rg-dia-panel">
                                                 <TablaGps
                                                     id_proyecto={id_proyecto}
+                                                    fecha_creacion={fecha_creacion}
                                                     id_dia_rastreo={dia.ID_DIA_RASTREO}
                                                     radio_busqueda={radio_busqueda}
                                                     estado_geo={estado_geo}

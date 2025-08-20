@@ -9,6 +9,7 @@ import topografoRoutes from './topografoRoutes.js';
 import proyectoRoutes from './proyectoRoutes.js';
 import diaRastreoRoutes from './diaRastreoRoutes.js'
 import gpsRoutes from './gpsRoutes.js'
+import reportesRoutes from './reportesRoutes.js'
 
 // Creamos una instancia del enrutador principal
 const router = Router();
@@ -32,6 +33,9 @@ router.use('/diaRastreo', diaRastreoRoutes);
 
 /* Ruta: /api/gps */
 router.use('/gps', gpsRoutes);
+
+/* Ruta: /api/reportes */
+router.use('/reportes', reportesRoutes);
 
 // Exportamos este router principal para usarlo en app.js
 export default router;

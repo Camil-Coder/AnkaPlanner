@@ -5,7 +5,7 @@ import { obtenerGpsBase } from '../services/gpsServise';           // ⬅️ cor
 import ModalCrearGps from './ModalCrearGps';
 
 
-export const TablaGps = ({ id_proyecto, id_dia_rastreo, radio_busqueda, estado_geo, cargarPro, refrescar }) => {
+export const TablaGps = ({ id_proyecto, fecha_creacion, id_dia_rastreo, radio_busqueda, estado_geo, cargarPro, refrescar }) => {
   const [gpsBase, setGpsBase] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [mostrarModal, setMostrarModal] = useState(false);
@@ -88,6 +88,7 @@ export const TablaGps = ({ id_proyecto, id_dia_rastreo, radio_busqueda, estado_g
         show={mostrarModal}
         handleClose={cerrarModal}
         id_proyecto={id_proyecto}
+        fecha_creacion={fecha_creacion}
         id_dia_rastreo={id_dia_rastreo}
         refrescarGps={cargarGpsBase}
         onCreado={handleGpsCreado}

@@ -90,6 +90,20 @@ export const buscarRutaBaseRed = async (id_diaRastreo) => {
 
 
 /* ---------------------------------------------
+  Busqueda de la ruta guardada de un proyecto
+  ---------------------------------------------*/
+export const buscarRutaBaseGeo = async (id_diaRastreo) => {
+  console.log('id_dia rastreo: ', id_diaRastreo )
+  const [rows] = await db.query('SELECT RUTA_DIA_RASTREO_GEO FROM DIA_RASTREO WHERE ID_DIA_RASTREO = ?', [id_diaRastreo]);
+  // Si no lo encuentra retornamos null
+  if (rows.length === 0) {
+    return null;
+  }
+  return rows[0].RUTA_DIA_RASTREO_GEO;
+};
+
+
+/* ---------------------------------------------
   Busqueda de los nombres dia rastro por id proyecto
   ---------------------------------------------*/
 export const BuscarNombresDias = async (id_proyecto) => {

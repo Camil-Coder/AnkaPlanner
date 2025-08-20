@@ -30,7 +30,7 @@ const Resumen = forwardRef((props, ref) => {
   }, []); // 👈 Solo se ejecuta una vez al montar
 
   const totalProyectos = proyectos.length;
-  const redEnProceso = proyectos.filter(p => p.ESTADO_RED === 'En Proceso').length;
+  const redEnProceso = proyectos.filter(p => (p.ESTADO_RED === 'En Proceso' || /^\d{4}-\d{2}-\d{2}(?:\s+\d{2}:\d{2}:\d{2})?$/.test(String(p.ESTADO_RED || '').trim()))).length;
   const geoEnProceso = proyectos.filter(p => p.ESTADO_GEO === 'En Proceso').length;
 
   return (

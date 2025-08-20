@@ -43,8 +43,10 @@ def crear_carpetas_dia_rastreo(ruta_proyecto, nombre_dia):
     carpetas = [
         os.path.join(ruta_rastreo_dia, 'Base'),
         os.path.join(ruta_rastreo_dia, 'Red activa'),
+        
         os.path.join(ruta_reportes_dia, 'FIX'),
         os.path.join(ruta_reportes_dia, 'NAVEGADO'),
+        os.path.join(ruta_reportes_dia, 'VALIDACION'),
     ]
 
     for carpeta in carpetas:

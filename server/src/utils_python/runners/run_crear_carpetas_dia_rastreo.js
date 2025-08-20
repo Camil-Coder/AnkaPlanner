@@ -40,8 +40,11 @@ export function runCrearCarpetasDiaRastreo(rutaProyecto, nombreDia) {
 
         // El script imprime dos rutas (una por línea), las capturamos y separamos
         const lineas = output.trim().split('\n');
+        console.log(lineas)
         const rutaRastreo = lineas[0]?.trim();   // Primera línea: ruta de rastreo
-        const rutaReportes = lineas[1]?.trim();  // Segunda línea: ruta de reportes
+        const rutaReportes = lineas[6]?.trim();  // Segunda línea: ruta de reportes
+
+
 
         // Si alguna de las rutas no fue generada correctamente, lanzamos error
         if (!rutaRastreo || !rutaReportes) {

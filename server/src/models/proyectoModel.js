@@ -84,9 +84,9 @@ export const crearProyecto = async (datosProyecto) => {
   return { id: resultado.insertId };
 };
 
-// Actualizar un proyecto existente (solo radio_busqueda, estado_red, estado_geo)
+// modelo.js
 export const actualizarProyecto = async (id_proyecto, nuevosDatos) => {
-  const { radio_busqueda, estado_red, estado_geo } = nuevosDatos;
+  const { radio_busqueda, estado_red, estado_geo, fecha_creacion } = nuevosDatos;
 
   const campos = [];
   const valores = [];
@@ -94,6 +94,7 @@ export const actualizarProyecto = async (id_proyecto, nuevosDatos) => {
   if (radio_busqueda !== undefined) { campos.push('RADIO_BUSQUEDA = ?'); valores.push(radio_busqueda); }
   if (estado_red !== undefined)     { campos.push('ESTADO_RED = ?');     valores.push(estado_red); }
   if (estado_geo !== undefined)     { campos.push('ESTADO_GEO = ?');     valores.push(estado_geo); }
+  if (fecha_creacion !== undefined) { campos.push('FECHA_CREACION = ?'); valores.push(fecha_creacion); } // DATETIME
 
   if (campos.length === 0) throw new Error('No se proporcionaron campos permitidos.');
 

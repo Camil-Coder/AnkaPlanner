@@ -70,13 +70,14 @@ export const putProyecto = async (req, res) => {
     const id_proyecto = req.params.id;
 
     // Acepta snake_case y MAYÚSCULAS del front
-    const radio_body = req.body.radio_busqueda ?? req.body.RADIO_BUSQUEDA;
-    const estado_red_body = req.body.estado_red ?? req.body.ESTADO_RED;
-    const estado_geo_body = req.body.estado_geo ?? req.body.ESTADO_GEO;
+    const radio_body       = req.body.radio_busqueda   ?? req.body.RADIO_BUSQUEDA;
+    const estado_red_body  = req.body.estado_red       ?? req.body.ESTADO_RED;
+    const estado_geo_body  = req.body.estado_geo       ?? req.body.ESTADO_GEO;
+    const fecha_body       = req.body.fecha_creacion   ?? req.body.FECHA_CREACION; // 'YYYY-MM-DD'
 
     const datos = {};
 
-    // Validación ÚNICA: radio en rango
+    // Validación: radio en rango
     if (radio_body !== undefined) {
       const num = Number(radio_body);
       if (Number.isNaN(num) || num < 80 || num > 250) {
@@ -85,13 +86,23 @@ export const putProyecto = async (req, res) => {
       datos.radio_busqueda = num;
     }
 
-    // Estados: SIN validación de contenido (solo se permite actualizarlos)
+    // Estados (sin validación de contenido)
     if (estado_red_body !== undefined) datos.estado_red = String(estado_red_body);
     if (estado_geo_body !== undefined) datos.estado_geo = String(estado_geo_body);
 
+    // Fecha creación (YYYY-MM-DD -> YYYY-MM-DD 00:00:00)
+    if (fecha_body !== undefined) {
+      const s = String(fecha_body).trim();
+      const re = /^\d{4}-\d{2}-\d{2}$/; // 2025-08-14
+      if (!re.test(s)) {
+        return res.status(400).json({ mensaje: 'fecha_creacion debe tener formato YYYY-MM-DD.' });
+      }
+      datos.fecha_creacion = `${s} 00:00:00`;
+    }
+
     if (Object.keys(datos).length === 0) {
       return res.status(400).json({
-        mensaje: 'Nada que actualizar. Solo se permite: radio_busqueda, estado_red, estado_geo.'
+        mensaje: 'Nada que actualizar. Solo se permite: radio_busqueda, estado_red, estado_geo, fecha_creacion.'
       });
     }
 
@@ -102,6 +113,7 @@ export const putProyecto = async (req, res) => {
     return res.status(500).json({ mensaje: 'Error interno al actualizar', error: err?.message });
   }
 };
+
 
 
 
