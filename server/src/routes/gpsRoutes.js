@@ -4,7 +4,7 @@
 import { Router } from 'express';
 
 // Importamos las funciones del controlador que creamos
-import { postGpsBase, getGpsBase  } from '../controllers/gpsController.js';
+import { postGpsBase, getGpsBase, getNumGpsBase  } from '../controllers/gpsController.js';
 
 // Creamos una instancia de router (mini servidor)
 const router = Router();
@@ -23,6 +23,9 @@ router.post('/', postGpsBase);
 
 // Ruta para crear una nueva empresa
 router.get('/:id', getGpsBase );
+
+// Ruta para crear una nueva empresa
+router.get('/num/:id', getNumGpsBase );
 
 
 // Exportamos este router para que sea usado en routes/index.js

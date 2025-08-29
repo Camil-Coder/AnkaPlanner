@@ -1,13 +1,27 @@
 // src\controllers\proyectoController.js
 
 // Importamos las funciones del modelo
-import { buscarNombreProyecto, obtenerProyectos, crearProyecto, actualizarProyecto, ocultarProyecto} from '../models/proyectoModel.js';
+import { buscarNombreProyecto, obtenerProyectos, obtenerProyectosRed, crearProyecto, actualizarProyecto, ocultarProyecto, eliminarProyecto} from '../models/proyectoModel.js';
 import { obtenerNombreEmpresaPorId } from '../models/empresaModel.js';
 
 // Importamos la función que ejecuta el script Python para generar carpetación
 import { generarCarpetacion } from '../utils_python/runners/ejecutarCarpetacion.js';
 import { renombrarCarpetaProyecto } from '../utils_python/runners/ejecutarRenombrarCarpeta.js';
 
+
+/* ---------------------------------------------
+  Controlador GET /api/proyectos
+  ---------------------------------------------*/
+
+export const getProyectosRed = async (req, res) => {
+  try {
+    const proyectos = await obtenerProyectosRed();
+    res.status(200).json(proyectos);
+  } catch (error) {
+    console.error('❌ Error al obtener proyectos:', error);
+    res.status(500).json({ mensaje: 'Error interno del servidor' });
+  }
+};
 
 /* ---------------------------------------------
   Controlador GET /api/proyectos
@@ -134,7 +148,7 @@ export const deleteProyecto = async (req, res) => {
     if (!id || isNaN(id)) return res.status(400).json({ mensaje: 'ID de proyecto inválido o no proporcionado' });
 
     // Intentar actualizar
-    const resultado = await ocultarProyecto(id);
+    const resultado = await eliminarProyecto(id);
 
     if (!resultado) return res.status(404).json({ mensaje: 'No se encontró el proyecto con ese ID' });
 

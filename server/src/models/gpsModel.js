@@ -51,6 +51,20 @@ export const buscarGps = async (id_diaRastreo) => {
 };
 
 
+/* ---------------------------------------------
+  Búsqueda del número de GPS por medio del id del proyecto
+  ---------------------------------------------*/
+  export const contarGpsPorProyecto = async (id_proyecto) => {
+    const [rows] = await db.query(
+      'SELECT COUNT(*) AS numero_gps FROM GPS_BASE WHERE _ID_PROYECTO = ?', 
+      [id_proyecto]
+    );
+    
+    // Devolver el número de GPS
+    return rows[0].numero_gps;
+  };
+
+
 // Esta función valida si un gps ya existe para un proyecto dado
 export const validarGpsUnico = async (nombre_gps, id_dia_rastreo) => {
   try {

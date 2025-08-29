@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { runCrearGpsEnRastreo } from '../utils_python/runners/run_crear_gps_en_rastreo.js';
-import { crearGpsBase, buscarGps, validarGpsUnico } from '../models/gpsModel.js';
+import { crearGpsBase, buscarGps, validarGpsUnico, contarGpsPorProyecto } from '../models/gpsModel.js';
 import { buscarRutaBaseRed } from '../models/diaRastreoModel.js';
 
 // Resolver __dirname en ESModules
@@ -123,4 +123,23 @@ export const getGpsBase = async (req, res) => {
       }
 };
 
+export const getNumGpsBase = async (req, res) => {
+  const id_Proyecto = req.params.id;
+  
+  try {
+      // Obtener el número de GPS asociados al proyecto
+      const numeroGps = await contarGpsPorProyecto(id_Proyecto);
+      
+      // Verificar si se encontraron resultados
+      if (numeroGps !== undefined) {
+          // Respuesta en formato JSON con el número de GPS
+          res.json({ numero_gps: numeroGps });
+      } else {
+          res.status(404).json({ error: "No se encontraron GPS para este proyecto" });
+      }
+  } catch (error) {
+      console.error("Error al obtener los GPS:", error);
+      res.status(500).json({ error: "Error al obtener los GPS" });
+  }
+};
 

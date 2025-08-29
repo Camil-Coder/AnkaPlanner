@@ -1,4 +1,3 @@
-// ModalModificarProyecto.jsx
 import React, { useEffect, useState, useMemo } from 'react';
 import { Modal, Button, Form, Row, Col } from 'react-bootstrap';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
@@ -8,6 +7,7 @@ import { actualizarProyecto } from '../services/proyectoService';
 const ModalModificarProyecto = ({ show, onHide, proyecto, onActualizado }) => {
     const [radio, setRadio] = useState('');
     const [enviando, setEnviando] = useState(false);
+    const [showConfirmModal, setShowConfirmModal] = useState(false); // Estado para controlar el modal de confirmación
 
     // selects condicionales para estados
     const [estadoRedSel, setEstadoRedSel] = useState('');
@@ -77,10 +77,16 @@ const ModalModificarProyecto = ({ show, onHide, proyecto, onActualizado }) => {
         }
     };
 
-    const handleFinalizarProyecto = async () => {
+    // Función que maneja la finalización del proyecto
+    const handleFinalizarProyecto = () => {
+        setShowConfirmModal(true); // Muestra el modal de confirmación
+    };
+
+    // Confirmar finalización del proyecto
+    const handleConfirmarFinalizacion = async () => {
         try {
             setEnviando(true);
-            // ⬇️ finalizar en snake_case
+            // Finalizar el proyecto en el backend
             await actualizarProyecto(proyecto.ID_PROYECTO, {
                 estado_red: 'Finalizado',
                 estado_geo: 'Finalizado',
@@ -96,152 +102,181 @@ const ModalModificarProyecto = ({ show, onHide, proyecto, onActualizado }) => {
         }
     };
 
+    // Modal de confirmación
+    const ModalConfirmacion = ({ show, onHide, onConfirm }) => {
+        return (
+            <Modal show={show} onHide={onHide} centered backdrop="static">
+                <Modal.Header closeButton>
+                    <Modal.Title>Confirmación de Finalización</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <p>¿Está seguro de que desea finalizar el proyecto? Esta acción no se puede deshacer.</p>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={onHide}>Cancelar</Button>
+                    <Button variant="danger" onClick={() => { 
+                        onConfirm(); 
+                        onHide(); 
+                    }}>Confirmar</Button>
+                </Modal.Footer>
+            </Modal>
+        );
+    };
+
     if (!proyecto) return null;
 
     return (
-        <Modal show={show} onHide={onHide} centered backdrop="static">
-            <Modal.Header closeButton>
-                <Modal.Title>Modificar proyecto</Modal.Title>
-            </Modal.Header>
+        <>
+            <Modal show={show} onHide={onHide} centered backdrop="static">
+                <Modal.Header closeButton>
+                    <Modal.Title>Modificar proyecto</Modal.Title>
+                </Modal.Header>
 
-            <Modal.Body>
-                {enviando ? (
-                    // Loader
-                    <div className="d-flex flex-column align-items-center justify-content-center text-center">
-                        <DotLottieReact
-                            src="https://lottie.host/d9b46d70-8e00-4356-9307-6152c917c64b/iMuNvyZS6n.lottie"
-                            autoplay
-                            loop
-                            style={{ height: 200, width: 200 }}
-                        />
-                        <p className="mt-3">Guardando... 🚧</p>
-                    </div>
-                ) : (
-                    <>
-                        {/* Info solo lectura */}
-                        <Row className="mb-2">
-                            <Col sm={6}>
-                                <Form.Group>
-                                    <Form.Label>Nombre proyecto</Form.Label>
-                                    <Form.Control value={proyecto.NOMBRE_PROYECTO} disabled />
-                                </Form.Group>
-                            </Col>
-                            <Col sm={6}>
-                                <Form.Group>
-                                    <Form.Label>Empresa</Form.Label>
-                                    <Form.Control value={proyecto.NOMBRE_EMPRESA} disabled />
-                                </Form.Group>
-                            </Col>
-                        </Row>
-
-                        <Row className="mb-2">
-                            <Col sm={6}>
-                                <Form.Group>
-                                    <Form.Label>Topógrafo</Form.Label>
-                                    <Form.Control value={topografoMostrar} disabled />
-                                </Form.Group>
-                            </Col>
-                            <Col sm={6}>
-                                <Form.Group>
-                                    <Form.Label>Fecha de creación</Form.Label>
-                                    <Form.Control value={fechaYMD} disabled />
-                                </Form.Group>
-                            </Col>
-                        </Row>
-
-                        {/* Estados: visibles pero deshabilitados */}
-                        <Row className="mb-2">
-                            <Col sm={6}>
-                                <Form.Group>
-                                    <Form.Label>Estado RedGeoScan</Form.Label>
-                                    <Form.Control value={proyecto.ESTADO_RED} disabled />
-                                </Form.Group>
-                            </Col>
-                            <Col sm={6}>
-                                <Form.Group>
-                                    <Form.Label>Estado Cambio de Época</Form.Label>
-                                    <Form.Control value={proyecto.ESTADO_GEO} disabled />
-                                </Form.Group>
-                            </Col>
-                        </Row>
-
-                        {/* Selects SOLO si son modificables */}
-                        {redDisponible && (
-                            <Row className="mb-2">
-                                <Col sm={12}>
-                                    <Form.Group>
-                                        <Form.Label>Cambiar Estado RedGeoScan</Form.Label>
-                                        <Form.Select
-                                            value={estadoRedSel}
-                                            onChange={(e) => setEstadoRedSel(e.target.value)}
-                                        >
-                                            <option>En Proceso</option>
-                                            <option>Completo</option>
-                                            <option>Finalizado</option>
-                                        </Form.Select>
-                                    </Form.Group>
-                                </Col>
-                            </Row>
-                        )}
-
-                        {geoDisponible && (
-                            <Row className="mb-3">
-                                <Col sm={12}>
-                                    <Form.Group>
-                                        <Form.Label>Cambiar Estado Cambio de Época</Form.Label>
-                                        <Form.Select
-                                            value={estadoGeoSel}
-                                            onChange={(e) => setEstadoGeoSel(e.target.value)}
-                                        >
-                                            <option>En Proceso</option>
-                                            <option>Completo</option>
-                                            <option>Finalizado</option>
-                                        </Form.Select>
-                                    </Form.Group>
-                                </Col>
-                            </Row>
-                        )}
-
-                        {/* Único campo editable permanente */}
-                        <Form.Group className="mt-3">
-                            <Form.Label>Radio de búsqueda (m)</Form.Label>
-                            <Form.Control
-                                type="number"
-                                min={1}
-                                step={1}
-                                value={radio}
-                                onChange={(e) => setRadio(e.target.value)}
-                                placeholder="Ingresa el nuevo radio"
+                <Modal.Body>
+                    {enviando ? (
+                        // Loader
+                        <div className="d-flex flex-column align-items-center justify-content-center text-center">
+                            <DotLottieReact
+                                src="https://lottie.host/d9b46d70-8e00-4356-9307-6152c917c64b/iMuNvyZS6n.lottie"
+                                autoplay
+                                loop
+                                style={{ height: 200, width: 200 }}
                             />
-                            <Form.Text className="text-muted">
-                                Solo puedes editar Radio. Los estados se ven grises hasta que cumplas los pasos: Días Rastreos + 1 GPS (RedGeoScan) y Cartera FIX + Cartera Navegada (Cambio de Época).
-                            </Form.Text>
-                        </Form.Group>
-                    </>
-                )}
-            </Modal.Body>
+                            <p className="mt-3">Guardando... 🚧</p>
+                        </div>
+                    ) : (
+                        <>
+                            {/* Info solo lectura */}
+                            <Row className="mb-2">
+                                <Col sm={6}>
+                                    <Form.Group>
+                                        <Form.Label>Nombre proyecto</Form.Label>
+                                        <Form.Control value={proyecto.NOMBRE_PROYECTO} disabled />
+                                    </Form.Group>
+                                </Col>
+                                <Col sm={6}>
+                                    <Form.Group>
+                                        <Form.Label>Empresa</Form.Label>
+                                        <Form.Control value={proyecto.NOMBRE_EMPRESA} disabled />
+                                    </Form.Group>
+                                </Col>
+                            </Row>
 
-            <Modal.Footer>
-                <Button variant="danger" onClick={onHide} disabled={enviando}>
-                    Cancelar
-                </Button>
+                            <Row className="mb-2">
+                                <Col sm={6}>
+                                    <Form.Group>
+                                        <Form.Label>Topógrafo</Form.Label>
+                                        <Form.Control value={topografoMostrar} disabled />
+                                    </Form.Group>
+                                </Col>
+                                <Col sm={6}>
+                                    <Form.Group>
+                                        <Form.Label>Fecha de creación</Form.Label>
+                                        <Form.Control value={fechaYMD} disabled />
+                                    </Form.Group>
+                                </Col>
+                            </Row>
 
-                {/* Botón Finalizar proyecto SOLO si ambos se pueden modificar */}
-                {redDisponible && geoDisponible && (
+                            {/* Estados: visibles pero deshabilitados */}
+                            <Row className="mb-2">
+                                <Col sm={6}>
+                                    <Form.Group>
+                                        <Form.Label>Estado RedGeoScan</Form.Label>
+                                        <Form.Control value={proyecto.ESTADO_RED} disabled />
+                                    </Form.Group>
+                                </Col>
+                                <Col sm={6}>
+                                    <Form.Group>
+                                        <Form.Label>Estado Cambio de Época</Form.Label>
+                                        <Form.Control value={proyecto.ESTADO_GEO} disabled />
+                                    </Form.Group>
+                                </Col>
+                            </Row>
+
+                            {/* Selects SOLO si son modificables */}
+                            {redDisponible && (
+                                <Row className="mb-2">
+                                    <Col sm={12}>
+                                        <Form.Group>
+                                            <Form.Label>Cambiar Estado RedGeoScan</Form.Label>
+                                            <Form.Select
+                                                value={estadoRedSel}
+                                                onChange={(e) => setEstadoRedSel(e.target.value)}
+                                            >
+                                                <option value="">Seleccionar estado</option>
+                                                <option>En Proceso</option>
+                                                <option>Completo</option>
+                                                <option>Finalizado</option>
+                                            </Form.Select>
+                                        </Form.Group>
+                                    </Col>
+                                </Row>
+                            )}
+
+                            {geoDisponible && (
+                                <Row className="mb-3">
+                                    <Col sm={12}>
+                                        <Form.Group>
+                                            <Form.Label>Cambiar Estado Cambio de Época</Form.Label>
+                                            <Form.Select
+                                                value={estadoGeoSel}
+                                                onChange={(e) => setEstadoGeoSel(e.target.value)}
+                                            >
+                                                <option>En Proceso</option>
+                                                <option>Completo</option>
+                                                <option>Finalizado</option>
+                                            </Form.Select>
+                                        </Form.Group>
+                                    </Col>
+                                </Row>
+                            )}
+
+                            {/* Único campo editable permanente */}
+                            <Form.Group className="mt-3">
+                                <Form.Label>Radio de búsqueda (m)</Form.Label>
+                                <Form.Control
+                                    type="number"
+                                    min={1}
+                                    step={1}
+                                    value={radio}
+                                    onChange={(e) => setRadio(e.target.value)}
+                                    placeholder="Ingresa el nuevo radio"
+                                />
+                                <Form.Text className="text-muted">
+                                    Solo puedes editar Radio. Los estados se ven grises hasta que cumplas los pasos: Días Rastreos + 1 GPS (RedGeoScan) y Cartera FIX + Cartera Navegada (Cambio de Época).
+                                </Form.Text>
+                            </Form.Group>
+                        </>
+                    )}
+                </Modal.Body>
+
+                <Modal.Footer>
+                    <Button variant="danger" onClick={onHide} disabled={enviando}>
+                        Cancelar
+                    </Button>
+
+                    {/* Botón Finalizar proyecto siempre visible */}
                     <Button variant="success" onClick={handleFinalizarProyecto} disabled={enviando}>
                         Finalizar proyecto
                     </Button>
-                )}
 
-                <Button
-                    style={{ backgroundColor: '#F47C27', border: 'none' }}
-                    onClick={handleGuardar}
-                    disabled={enviando}
-                >
-                    Guardar cambios
-                </Button>
-            </Modal.Footer>
-        </Modal>
+                    <Button
+                        style={{ backgroundColor: '#F47C27', border: 'none' }}
+                        onClick={handleGuardar}
+                        disabled={enviando}
+                    >
+                        Guardar cambios
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
+            {/* Modal de confirmación */}
+            <ModalConfirmacion 
+                show={showConfirmModal} 
+                onHide={() => setShowConfirmModal(false)} 
+                onConfirm={handleConfirmarFinalizacion} 
+            />
+        </>
     );
 };
 

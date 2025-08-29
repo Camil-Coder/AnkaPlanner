@@ -35,7 +35,7 @@ export const buscarNombreProyecto = async (nombre_proyect) => {
  * Recupera todos los proyectos desde la base de datos, incluyendo
  * el nombre del topógrafo y el nombre de la empresa asociados a cada uno. */
 
-export const obtenerProyectos = async () => {
+export const obtenerProyectosRed = async () => {
   const [rows] = await db.query(`
     SELECT 
       p.ID_PROYECTO,           -- ID único del proyecto
@@ -54,6 +54,36 @@ export const obtenerProyectos = async () => {
 
   return rows; // Retorna el listado de proyectos con topógrafo y empresa
 };
+
+
+/* ---------------------------------------------
+  Obtener todos los proyectos registrados FRONT
+  ---------------------------------------------
+
+ * Recupera todos los proyectos desde la base de datos, incluyendo
+ * el nombre del topógrafo y el nombre de la empresa asociados a cada uno. */
+
+  export const obtenerProyectos = async () => {
+    const [rows] = await db.query(`
+        SELECT 
+          p.ID_PROYECTO,           -- ID único del proyecto
+          p.NOMBRE_PROYECTO,       -- Nombre asignado al proyecto (ej. ALTAMIRA-0725)
+          p.FECHA_CREACION,        -- Fecha en que fue creado el proyecto
+          p.RUTA_PROYECTO,         -- Ruta absoluta en disco donde se aloja el proyecto
+          p.RADIO_BUSQUEDA,        -- Rango de búsqueda en km para estaciones GNSS
+          p.ESTADO_RED,            -- Estado del proceso de red (En Proceso / Completo / Finalizado)
+          p.ESTADO_GEO,            -- Estado del proceso GEOEPOCA (En Proceso / Completo / Finalizado)
+          t.NOMBRE_TOPOGRAFO,      -- Nombre del topógrafo que creó el proyecto
+          e.NOMBRE_EMPRESA         -- Nombre de la empresa a la que pertenece el proyecto
+        FROM PROYECTO p
+        JOIN TOPOGRAFO t ON p._ID_TOPOGRAFO = t.ID_TOPOGRAFO  -- Unión con la tabla TOPOGRAFO
+        JOIN EMPRESA e ON p._ID_EMPRESA = e.ID_EMPRESA        -- Unión con la tabla EMPRESA
+        WHERE p.ESTADO_RED NOT LIKE '%Finalizado%'
+          AND p.ESTADO_GEO NOT LIKE '%Finalizado%'
+      `);
+  
+    return rows; // Retorna el listado de proyectos con topógrafo y empresa, excluyendo los finalizados
+  };
 
 
 /* ---------------------------------------------
@@ -108,7 +138,7 @@ export const actualizarProyecto = async (id_proyecto, nuevosDatos) => {
 
 
   /* ---------------------------------------------
-  Ocultar un proyecto existente
+  eliminar un proyecto un proyecto existente
   ---------------------------------------------*/
   export const ocultarProyecto = async (id_proyecto) => {
     const estadoFinal = 'Finalizado';
@@ -118,4 +148,63 @@ export const actualizarProyecto = async (id_proyecto, nuevosDatos) => {
   
     return true; // Actualización exitosa
   };
+
+
+
+// Función para eliminar un proyecto
+export const eliminarProyecto = async (id_proyecto) => {
+  const connection = await db.getConnection();
   
+  try {
+    // Iniciar transacción
+    await connection.beginTransaction();
+    
+    // 1. Eliminar los reportes ligados al proyecto
+    await connection.query(
+      'DELETE FROM reportes WHERE _ID_PROYECTO = ?',
+      [id_proyecto]
+    );
+    
+    // 2. Eliminar los GPS base ligados al proyecto
+    await connection.query(
+      'DELETE FROM gps_base WHERE _ID_PROYECTO = ?',
+      [id_proyecto]
+    );
+    
+    // 3. Eliminar los días de rastreo ligados al proyecto
+    await connection.query(
+      'DELETE FROM dia_rastreo WHERE _ID_PROYECTO = ?',
+      [id_proyecto]
+    );
+
+    // 4. Eliminar el cambio de época del proyecto (si existe)
+    await connection.query(
+      'DELETE FROM excel_cambio_epoca WHERE _ID_PROYECTO = ?',
+      [id_proyecto]
+    );
+    
+    // 5. Finalmente, eliminar el proyecto
+    const [result] = await connection.query(
+      'DELETE FROM proyecto WHERE ID_PROYECTO = ?',
+      [id_proyecto]
+    );
+
+    // Si no se eliminó nada, significa que el proyecto no existía
+    if (result.affectedRows === 0) {
+      await connection.rollback();
+      return null;
+    }
+    
+    // Confirmamos la transacción
+    await connection.commit();
+    return true; // Proyecto eliminado con éxito
+
+  } catch (error) {
+    // En caso de error, revertimos los cambios
+    await connection.rollback();
+    throw error; // Lanzamos el error para que pueda ser gestionado
+  } finally {
+    // Cerramos la conexión
+    connection.release();
+  }
+};
